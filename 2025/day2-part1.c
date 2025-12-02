@@ -34,30 +34,23 @@ int main() {
         // printf("%c", c);
         
         if (c == ',') {
-            printf(", found \n");
-            
-            char* endptr;
-            numBuffer[numIndex] = '\0';
-            unsigned long lower = strtoul(numBuffer, &endptr, 10);
-            rangeLower[rangeCount] = lower;
-            rangeCount++;
-            isLower = 1;
-            
-        } else if (c == '-') {
-            printf("- found \n");
-            
             char* endptr;
             numBuffer[numIndex] = '\0';
             unsigned long upper = strtoul(numBuffer, &endptr, 10);
             rangeUpper[rangeCount] = upper;
-            isLower = 0;
-            
+            rangeCount++;
+            numIndex = 0;
+        } else if (c == '-') {
+            char* endptr;
+            numBuffer[numIndex] = '\0';
+            unsigned long lower = strtoul(numBuffer, &endptr, 10);
+            rangeLower[rangeCount] = lower;
+            numIndex = 0;
         } else if (c == '\n') {
             continue;
         } else {
             // assume it's an int, add to buffer
-            printf("%c ", c);
-            // numBuffer[numIndex++] = c;
+            numBuffer[numIndex++] = c;
         }
     }
     
@@ -65,7 +58,6 @@ int main() {
         printf("Lower: %lu, Upper: %lu \n", rangeLower[i], rangeUpper[i]);
     }
 
-    /*
     unsigned long runningTotal = 0;
     
     for (int i = 0; i < rangeCount; i++) {
@@ -81,7 +73,6 @@ int main() {
     }
     
     printf("Total = %lu \n", runningTotal);
-    */
 
     return 0;
 }
