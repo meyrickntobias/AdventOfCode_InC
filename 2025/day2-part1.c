@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include "input_processing.h"
 
 int isSymmetrical(char *originalStr, int length) {
     if (length % 2 != 0) return 0; 
@@ -11,39 +13,42 @@ int isSymmetrical(char *originalStr, int length) {
     return 1;
 }
 
-int isValid(unsigned long num) {
+int isValid(uint64_t num) {
     char buffer[20]; 
-    sprintf(buffer, "%lu", num);
+    sprintf(buffer, "%llu", num);
     size_t len = strlen(buffer);
     return isSymmetrical(buffer, len) == 0;
 }
 
 int main() {
-    FILE *input = fopen("input/day2.txt", "r");
-    char c;
+    char text[10000];
+    int charCount = readFile("input/day2.txt", text);
+    printf("%d\n", charCount);
+
     int isLower = 1;
     char numBuffer[20];
     int numIndex = 0;
 
     // Assuming we have less than 100 ranges
-    unsigned long rangeLower[100];
-    unsigned long rangeUpper[100];
+    uint64_t rangeLower[100];
+    uint64_t rangeUpper[100];
     int rangeCount = 0;
     
-    while ((c = fgetc(input)) != EOF) {
+    for (int i = 0; i < charCount; i++)
+    {
+        char c = text[i];
         // printf("%c", c);
-        
         if (c == ',') {
             char* endptr;
             numBuffer[numIndex] = '\0';
-            unsigned long upper = strtoul(numBuffer, &endptr, 10);
+            uint64_t upper = strtoul(numBuffer, &endptr, 10);
             rangeUpper[rangeCount] = upper;
             rangeCount++;
             numIndex = 0;
         } else if (c == '-') {
             char* endptr;
             numBuffer[numIndex] = '\0';
-            unsigned long lower = strtoul(numBuffer, &endptr, 10);
+            uint64_t lower = strtoul(numBuffer, &endptr, 10);
             rangeLower[rangeCount] = lower;
             numIndex = 0;
         } else if (c == '\n') {
@@ -53,26 +58,27 @@ int main() {
             numBuffer[numIndex++] = c;
         }
     }
+
+    uint64_t runningTotal = 0;
+    printf("Range count: %d \n", rangeCount);
     
     for (int i = 0; i < rangeCount; i++) {
-        printf("Lower: %lu, Upper: %lu \n", rangeLower[i], rangeUpper[i]);
-    }
+        uint64_t lower = rangeLower[i];
+        uint64_t upper = rangeUpper[i];
 
-    unsigned long runningTotal = 0;
-    
-    for (int i = 0; i < rangeCount; i++) {
-        unsigned long lower = rangeLower[i];
-        unsigned long upper = rangeUpper[i];
+        if (lower >= upper) continue;   
 
-        for (unsigned long j = lower; j <= upper; j++) {
+        printf("Lower: %llu, Upper: %llu \n", lower, upper);
+
+        for (uint64_t j = lower; j <= upper; j++) {
             if (!isValid(j)) {
                 runningTotal += j;
-                printf("Invalid ID found %lu \n", j);
+                // printf("Invalid ID found %lu \n", j);
             }
         }
     }
     
-    printf("Total = %lu \n", runningTotal);
+    printf("Total = %llu \n", runningTotal);
 
     return 0;
 }

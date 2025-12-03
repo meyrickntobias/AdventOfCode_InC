@@ -3,6 +3,7 @@
 #include <ctype.h>
 
 int getNextPosition(int position, int move) {
+    // Wrapping around once the position gets to 99, and back to 99 once it gets past 0
     return ((position + (move % 100)) + 100) % 100;
 }
 
