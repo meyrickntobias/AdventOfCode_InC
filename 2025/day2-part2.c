@@ -85,7 +85,7 @@ bool isValid(uint64_t num) {
 
 int main() {
     char text[10000];
-    int charCount = readFile("input/day2_sample.txt", text);
+    int charCount = readFile("input/day2.txt", text);
     printf("%d\n", charCount);
 
     int isLower = 1;
