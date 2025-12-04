@@ -4,4 +4,6 @@
 
 int readFile(char *fileName, char *text);
 
+int widthOfLine(char *text, int maxLength);
+
 #endif // INPUT_PROCESSING_H

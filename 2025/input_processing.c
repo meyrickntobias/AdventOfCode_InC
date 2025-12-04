@@ -23,3 +23,10 @@ int readFile(char *fileName, char *text) {
     text[i++] = '\0';
     return i;
 }
+
+int widthOfLine(char *text, int maxLength) {
+    for (int i = 0; i < maxLength; i++) {
+        if (text[i] == '\n') return i + 1; 
+    }
+    return maxLength;
+}
