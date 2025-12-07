@@ -10,23 +10,28 @@ typedef struct {
     int colCount;
 } Grid;
 
+typedef struct {
+    int row;
+    int col;
+} Coordinate;
+
 bool isWithinBounds(int row, int col, int rowCount, int colCount) {
     if (row >= rowCount || row < 0) return false;
     if (col >= colCount || col < 0) return false;
     return true;
 }
 
-bool isRollAtPosition(InputData input, int row, int col) {
-    if (!isWithinBounds(row, col, input.rowCount, input.colCount)) {
+bool isRollAtPosition(Grid *input, int row, int col) {
+    if (!isWithinBounds(row, col, input->rowCount, input->colCount)) {
         return false;
     }
 
-    char c = input.map[row][col];
+    char c = input->map[row][col];
     if (c == '@') return true;
     return false;
 }
 
-int getAdjacentRolls(InputData input, int row, int col) {
+int getAdjacentRolls(Grid *input, int row, int col) {
     int adjacentRolls = 0;
 
     int up = row + 1;
@@ -45,17 +50,43 @@ int getAdjacentRolls(InputData input, int row, int col) {
 
     return adjacentRolls;
 }
+    
+int removeAccessibleRolls(Grid *input) {
+    int accessibleRolls = 0;
+    Coordinate rollsToRemove[2000];
 
-InputData processInput(char* fileName) {
+    for (int i = 0; i < input->rowCount; i++)
+    {
+        for (int j = 0; j < input->colCount; j++) {
+            if (!isRollAtPosition(input, i, j)) continue;
+            if (getAdjacentRolls(input, i, j) < 4) {
+                rollsToRemove[accessibleRolls].row = i;
+                rollsToRemove[accessibleRolls].col = j;
+
+                accessibleRolls++;
+            }
+        }
+    }
+
+    for (int i = 0; i < accessibleRolls; i++) {
+        int row = rollsToRemove[i].row;
+        int col = rollsToRemove[i].col;
+
+        input->map[row][col] = '.';
+    }
+
+    return accessibleRolls;
+}
+
+Grid processInput(char* fileName) {
     char inputBuffer[30000];
     int charCount = readFile(fileName, inputBuffer);
     char **map = NULL;
     
     int rowIterator = 0;
-    int colIterator = 0;
     int colWidth = widthOfLine(inputBuffer, charCount);
 
-    char rowBuffer[300];
+    char rowBuffer[colWidth];
     char c;
 
     for (int i = 0; i < charCount; i++) {
@@ -68,16 +99,13 @@ InputData processInput(char* fileName) {
             map[rowIterator-1] = malloc(sizeof(char) * colWidth);
 
             for (int j = 0; j < colWidth; j++) {
-                map[rowIterator-1][j] = rowBuffer[j]; 
+                map[rowIterator-1][j] = inputBuffer[((rowIterator - 1) * colWidth) + j];
             }
-            colIterator = 0;
             continue;
         }
-        
-        rowBuffer[colIterator++] = inputBuffer[i];
     }
 
-    InputData inputData = {map, rowIterator, colWidth };
+    Grid inputData = {map, rowIterator, colWidth };
 
     return inputData;
 }
@@ -87,21 +115,24 @@ int main() {
     double time_spent;
     start = clock();
  
-    InputData inputData = processInput("input/day4_input.txt");
+    Grid inputData = processInput("input/day4_input.txt");
+    Grid *input = &inputData;
+
+    int rollsRemoved = 0;
     int accessibleRolls = 0;
 
-    for (int i = 0; i < inputData.rowCount; i++)
-    {
-        for (int j = 0; j < inputData.colCount; j++) {
-            if (!isRollAtPosition(inputData, i, j)) continue;
-            if (getAdjacentRolls(inputData, i, j) < 4) {
-                // printf("Row: %d, Col: %d \n", i, j);
-                accessibleRolls++;
-            }
-        }
-    }
+    do {
+        accessibleRolls = removeAccessibleRolls(input);
+        printf("Rolls removed - %d \n", accessibleRolls);
+        rollsRemoved += accessibleRolls;
+    } while (accessibleRolls != 0);
 
-    printf("Accessible Rolls = %d\n", accessibleRolls);
+    for (int i = 0; i < input->rowCount; i++) {
+        free(input->map[i]);
+    }
+    free(input->map);
+
+    printf("Total rolls removed - %d \n", rollsRemoved);
     
     end = clock();
     time_spent = (double)(end - start) / CLOCKS_PER_SEC;

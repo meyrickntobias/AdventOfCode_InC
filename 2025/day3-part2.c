@@ -13,17 +13,13 @@ typedef struct {
     int** banks;
     int bankCount;
     int bankLength;
-} Grid;
+} InputData;
 
 int largestPossibleJoltage(int* bank, int length) {
     int highest = 0;
     for (int i = 0; i < length - 1; i++)
     {
-        // [ 9, 5, 1, 1, 8 ]
-        // 9 -> 5, 1, 1, 8       
-        // 5 -> 1, 1, 8
-        // 1 -> 1, 8
-        // 1 -> 8
+
         for (int j = i + 1; j < length; j++) {
             int joltage = bank[i] * 10 + bank[j];
             if (joltage > highest) highest = joltage;
@@ -32,7 +28,7 @@ int largestPossibleJoltage(int* bank, int length) {
     return highest;
 }
 
-Grid processInput(char* fileName) {
+InputData processInput(char* fileName) {
     char textBuffer[21000];
     int charCount = readFile(fileName, textBuffer);
 
@@ -69,9 +65,9 @@ Grid processInput(char* fileName) {
         }
     }
 
-    Grid Grid = { banks, bankCount, bankLength };
+    InputData input = { banks, bankCount, bankLength };
 
-    return Grid;
+    return input;
 }
 
 int main() {
@@ -81,33 +77,33 @@ int main() {
  
     char text[10000];
     // int banks[4][15] = { { 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1 }, { 8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9 }, { 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 7, 8 }, { 8, 1, 8, 1, 8, 1, 9, 1, 1, 1, 1, 2, 1, 1, 1 } }; 
-    Grid Grid = processInput("input/day3_input.txt");
-    printf("%d %d\n", Grid.bankCount, Grid.bankLength);
+    InputData input = processInput("input/day3_input.txt");
+    printf("%d %d\n", input.bankCount, input.bankLength);
 
     int runningTotal = 0;
 
     /*
     for (int i = 0; i < 4; i++)
     {
-        for (int j = 0; j < Grid.bankLength; j++) {
-            printf("%d", Grid.banks[i][j]);
+        for (int j = 0; j < InputData.bankLength; j++) {
+            printf("%d", InputData.banks[i][j]);
         }
         printf("\n");
     }
     */
     
-    for (int i = 0; i < Grid.bankCount - 1; i++)
+    for (int i = 0; i < InputData.bankCount - 1; i++)
     {
-        int joltage = largestPossibleJoltage(Grid.banks[i], Grid.bankLength);
+        int joltage = largestPossibleJoltage(InputData.banks[i], InputData.bankLength);
         printf("Joltage = %d \n", joltage);
         runningTotal += joltage;
     }
 
-    for (int i = 0; i < Grid.bankCount; i++)
+    for (int i = 0; i < InputData.bankCount; i++)
     {
-        free(Grid.banks[i]);
+        free(InputData.banks[i]);
     }
-    free(Grid.banks);
+    free(InputData.banks);
 
     end = clock();
     time_spent = (double)(end - start) / CLOCKS_PER_SEC;
