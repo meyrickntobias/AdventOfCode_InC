@@ -33,21 +33,31 @@ Coordinate getStartingPosition(Grid *grid, char startingChar) {
     return notFoundPos;
 }
 
+int iterativeSplitter(Grid *grid, Coordinate position) {
+    // 
+}
+
 int splitter(Grid *grid, Coordinate position, int currentSplitCount) {
     printf("Called with position { %d, %d } \n", position.row, position.col);
     // Terminating condition
-    while (isWithinBounds(position, grid->rowCount, grid->colCount)) {
-        // If char at position is splitter, then call splitter
-        if (grid->map[position.row][position.col] == '^') {
-            Coordinate left = { position.row, position.col - 1 };
-            Coordinate right = { position.row, position.col + 1 };
-            currentSplitCount += 1;
+    if (!isWithinBounds(position, grid->rowCount, grid->colCount)) return currentSplitCount;
+    
+    if (grid->map[position.row][position.col] == '^') {
+        Coordinate left = { position.row, position.col - 1 };
+        Coordinate right = { position.row, position.col + 1 };
+        currentSplitCount += 1;
+        printf("Current split count = %d \n", currentSplitCount);
 
-            splitter(grid, left, currentSplitCount);
-            splitter(grid, right, currentSplitCount);
-        } else {
-            position.row++;
-        }
+        currentSplitCount = splitter(grid, left, currentSplitCount);
+        currentSplitCount = splitter(grid, right, currentSplitCount);
+    } else if (grid->map[position.row][position.col] == '|') {
+        position.row++;
+        currentSplitCount = splitter(grid, position, currentSplitCount);
+    } else {
+        grid->map[position.row][position.col] = '|';
+        position.row++;
+        printf("Encountered dot at position { %d, %d } \n", position.row, position.col);
+        currentSplitCount = splitter(grid, position, currentSplitCount);
     }
 
     return currentSplitCount;
@@ -69,14 +79,14 @@ Grid processInput(char* fileName) {
         c = inputBuffer[i];
 
         if (c == '\n' || i == charCount - 1) {
-            rowIterator++;
-
-            map = realloc(map, sizeof(char*) * rowIterator);
-            map[rowIterator-1] = malloc(sizeof(char) * colWidth);
+            // alloc row count * sizeof char pointer
+            map = realloc(map, sizeof(char*) * (rowIterator + 1));
+            map[rowIterator] = malloc(sizeof(char) * colWidth);
 
             for (int j = 0; j < colWidth; j++) {
-                map[rowIterator-1][j] = rowBuffer[j]; 
+                map[rowIterator][j] = rowBuffer[j]; 
             }
+            rowIterator++;
             colIterator = 0;
             continue;
         }
@@ -110,6 +120,14 @@ int main() {
     // Call recursive splitter function
     int finalSplitCount = splitter(grid, startingPos, 0);
     printf("Final split count = %d \n", finalSplitCount);
+
+    for (int i = 0; i < grid->rowCount; i++) {
+        for (int j = 0; j < grid->colCount; j++) {
+
+            printf("%c", grid->map[i][j]);
+        }
+        printf("\n");
+    }
 
     for (int i = 0; i < grid->rowCount; i++) {
         free(grid->map[i]);
