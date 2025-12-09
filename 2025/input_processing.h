@@ -2,8 +2,19 @@
 #ifndef INPUT_PROCESSING_H
 #define INPUT_PROCESSING_H
 
+#include <stdbool.h>
+
+typedef struct {
+    char** lines;
+    int lineCount;
+} LineCollection;
+
 int readFile(char *fileName, char *text);
 
+LineCollection splitIntoLines(char *text);
+
 int widthOfLine(char *text, int maxLength);
+
+bool isDigit(char* str);
 
 #endif // INPUT_PROCESSING_H
