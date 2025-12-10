@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "input_processing.h"
 
-int compareIntegers(const void* a, const void* b) {
+int compare64BitIntegers(const void* a, const void* b) {
     return (*(int*)a - *(int*)b);
 }
 
@@ -27,7 +27,7 @@ bool isSymmetrical(char *originalStr, int length) {
     // Get common factors of the length, e.g: 6 = 1, 2, 3, 6
     int factors[length];
     int factorCount = getFactors(length, factors);
-    qsort(factors, factorCount, sizeof(int), compareIntegers);
+    qsort(factors, factorCount, sizeof(int), compare64BitIntegers);
 
     // Iterate over every factor, starting from the first one (1)
     for (int i = 0; i < (factorCount - 1); i++) {
