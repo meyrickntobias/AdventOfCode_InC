@@ -14,6 +14,7 @@
 
 */
 
+// TODO: this should take in the buffer length and not overflow
 int readFile(char *fileName, char *text) {
     FILE *input = fopen(fileName, "r");
     char c;
