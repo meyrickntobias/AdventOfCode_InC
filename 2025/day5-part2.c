@@ -5,13 +5,11 @@
 #include <time.h>
 #include <stdint.h>
 #include "input_processing.h"
-#include "helpers/grid.h"
-#include "helpers/hashset.h"
+#include "helpers/ranges.h"
 
-typedef struct {
-    uint64_t low;
-    uint64_t high;
-} Range;
+#define INPUT_CHAR_LIMIT 1000000
+#define RANGES_LIMIT 10000
+#define INGREDIENTS_LIMIT 10000
 
 typedef struct {
     Range *ranges;
@@ -20,39 +18,16 @@ typedef struct {
     int ingredientCount;
 } InputData;
 
-typedef struct {
-    Range *ranges;
-    int rangeCount;
-} Ranges;
 
-int findEmptyLine(char* text, int length) {
-    int lineCount = 0;
-    int charsInBetween = 0;
-
-    for (int i = 0; i < length; i++) {
-        if (text[i] == '\n' && charsInBetween == 0) {
-            return lineCount;
-        } else if (text[i] == '\n') {
-            lineCount++;
-            charsInBetween = 0;
-        } else {
-            charsInBetween++;
-        }
-    }
-
-    // Could not find empty line
-    return -1;
-}
-
-InputData processInput() {
-    char inputBuffer[1000000];
-    int charCount = readFile("input/day5_input.txt", inputBuffer);
-    int emptyLineIndex = findEmptyLine(inputBuffer, charCount);
-    printf("First empty line = %d \n", emptyLineIndex);
+InputData processInput(char* fileName) {
+    // TODO is this bad practice, passing a stack variable into another function
+    char inputBuffer[INPUT_CHAR_LIMIT];
+    int charCount = readFile(fileName, inputBuffer);
+    int emptyLineIndex = findFirstEmptyLine(inputBuffer, charCount);
 
     LineCollection lines = splitIntoLines(inputBuffer);
-    Range *inputRanges = malloc(sizeof(Range) * 10000);
-    uint64_t *ingredients = malloc(sizeof(uint64_t) * 10000);
+    Range *inputRanges = malloc(sizeof(Range) * RANGES_LIMIT);
+    uint64_t *ingredients = malloc(sizeof(uint64_t) * INGREDIENTS_LIMIT);
     int rangeCount = 0;
 
     // Parse ranges
@@ -62,8 +37,6 @@ InputData processInput() {
         char *endPtr;
         Range range = { .low = strtoull(firstNum, &endPtr, 10), .high = strtoull(secondNum, &endPtr, 10) };
         inputRanges[rangeCount++] = range;
-
-        // printf("{ %llu, %llu } \n", range.low, range.high);
     }
 
     int ingredientCount = 0;
@@ -72,7 +45,6 @@ InputData processInput() {
     for (int i = emptyLineIndex; i < lines.lineCount; i++) {
         char *endPtr;
         uint64_t ingredient = strtoll(lines.lines[i], &endPtr, 10);
-        // printf("%llu \n", ingredient);
         ingredients[ingredientCount++] = ingredient;
     }
 
@@ -95,67 +67,20 @@ int compare64BitIntegers(const void* a, const void* b) {
     return 0;
 }
 
-int compareRanges(const void* a, const void* b) {
-    const Range *valA = a;
-    const Range *valB = b;
-
-    uint64_t lowA = valA->low;
-    uint64_t lowB = valB->low;
-
-    if (lowA < lowB) return -1;
-    if (lowA > lowB) return 1;
-    return 0;
-}
-
-uint64_t highest(uint64_t a, uint64_t b) {
-    if (a > b) return a;
-    return b;
-}
-
-// Takes an array of ranges a count, merges overlapping ranges and replaces ranges pointer
-Ranges mergeOverlappingRanges(Range* ranges, int rangeCount) {
-    Range* newRanges = malloc(rangeCount * sizeof(Range));
-    int mergedRangeCount = 0;
-
-    Range currentRange = ranges[0];
-    newRanges[mergedRangeCount++] = currentRange;
-
-    for (int i = 0; i < rangeCount-1; i++) {
-        Range nextRange = ranges[i+1];
-
-        if (nextRange.low <= currentRange.high) {
-            uint64_t high = highest(currentRange.high, nextRange.high);
-            Range mergedRange = { .low = currentRange.low, .high = high };
-            newRanges[mergedRangeCount - 1] = mergedRange;
-            
-            currentRange = mergedRange;
-        } else {
-            newRanges[mergedRangeCount++] = nextRange;
-            currentRange = nextRange;
-        }
-    }
-
-    Ranges rangesCollection = { newRanges, mergedRangeCount };
-    return rangesCollection;
-}
-
 int main() {
     clock_t start, end;
     double time_spent;
     start = clock();
 
-    InputData inputData = processInput();
+    InputData inputData = processInput("input/day5_input.txt");
     uint64_t freshIngredients = 0;
-
-    // Sort the ingredients
-    qsort(inputData.ingredients, inputData.ingredientCount, sizeof(uint64_t), compare64BitIntegers);
 
     // Sort the ranges by low
     qsort(inputData.ranges, inputData.rangeCount, sizeof(Range), compareRanges);
+    qsort(inputData.ingredients, inputData.ingredientCount, sizeof(uint64_t), compare64BitIntegers);
 
     Ranges newRanges = mergeOverlappingRanges(inputData.ranges, inputData.rangeCount);
 
-    // Verify the ranges
     for (int i = 0; i < newRanges.rangeCount; i++) {
         freshIngredients += newRanges.ranges[i].high - newRanges.ranges[i].low + 1; 
     }

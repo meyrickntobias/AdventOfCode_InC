@@ -68,3 +68,22 @@ bool isDigit(char* str) {
 
     return true;
 }
+
+int findFirstEmptyLine(char* text, int length) {
+    int lineCount = 0;
+    int charsInBetween = 0;
+
+    for (int i = 0; i < length; i++) {
+        if (text[i] == '\n' && charsInBetween == 0) {
+            return lineCount;
+        } else if (text[i] == '\n') {
+            lineCount++;
+            charsInBetween = 0;
+        } else {
+            charsInBetween++;
+        }
+    }
+
+    // Could not find empty line
+    return -1;
+}

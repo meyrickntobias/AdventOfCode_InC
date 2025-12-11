@@ -17,4 +17,6 @@ int widthOfLine(char *text, int maxLength);
 
 bool isDigit(char* str);
 
+int findFirstEmptyLine(char* str, int length);
+
 #endif // INPUT_PROCESSING_H
